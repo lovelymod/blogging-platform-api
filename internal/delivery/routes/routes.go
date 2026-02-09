@@ -14,6 +14,9 @@ func SetupRoutes(r *gin.Engine, h *Handlers) {
 	// Public Routes
 	r.POST("/blog", h.BlogHandler.Create)
 	r.GET("/blogs", h.BlogHandler.GetAll)
+	r.DELETE("/blog/:id", h.BlogHandler.Delete)
+
+	// api := r.GroupogHandler.GetAll)
 
 	// Protected Routes (ตัวอย่างถ้ามี Middleware)
 	// api.Use(middleware.AuthMiddleware()).POST("/blogs", blogHandler.Create)

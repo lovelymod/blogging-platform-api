@@ -3,6 +3,7 @@ package handler
 import (
 	"blogging-platform-api/internal/entity"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,6 +47,30 @@ func (h *BlogHandler) GetAll(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &entity.Resp{
 		Data:    blogs,
+		Success: true,
+	})
+}
+
+func (h *BlogHandler) Delete(c *gin.Context) {
+	deleteID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &entity.Resp{
+			Message: err.Error(),
+			Success: false,
+		})
+		return
+	}
+
+	if err := h.Usecase.Delete(c.Request.Context(), uint(deleteID)); err != nil {
+		c.JSON(http.StatusInternalServerError, &entity.Resp{
+			Message: err.Error(),
+			Success: false,
+		})
+		return
+
+	}
+
+	c.JSON(http.StatusOK, &entity.Resp{
 		Success: true,
 	})
 }

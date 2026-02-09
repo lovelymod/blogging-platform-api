@@ -31,3 +31,10 @@ func (u *blogUsecase) GetAll(ctx context.Context) ([]entity.Blog, error) {
 
 	return u.repo.GetAll(ctx)
 }
+
+func (u *blogUsecase) Delete(ctx context.Context, id uint) error {
+	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
+	defer cancel()
+
+	return u.repo.Delete(ctx, id)
+}
