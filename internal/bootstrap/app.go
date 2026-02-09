@@ -3,12 +3,15 @@ package bootstrap
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
 
 type Application struct {
-	DB *gorm.DB
+	DB         *gorm.DB
+	CorsConfig gin.HandlerFunc
 }
 
 func App() Application {
@@ -19,6 +22,7 @@ func App() Application {
 
 	app := &Application{}
 	app.DB = SetupDatabase() // เรียกฟังก์ชันจาก database.go
-	// app.Env = NewEnv()
+
+	app.CorsConfig = cors.New(cors.DefaultConfig())
 	return *app
 }
