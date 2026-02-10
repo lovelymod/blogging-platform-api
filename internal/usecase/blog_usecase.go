@@ -39,7 +39,7 @@ func (u *blogUsecase) Create(ctx context.Context, blog *entity.Blog) error {
 	return u.repo.Create(ctx, blog)
 }
 
-func (u *blogUsecase) Update(ctx context.Context, id uint, updateBlog *entity.UpdateBlogRequest) (*entity.Blog, error) {
+func (u *blogUsecase) Update(ctx context.Context, id uint, updateBlog *entity.Blog) error {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 

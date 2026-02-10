@@ -57,13 +57,26 @@ func (h *BlogHandler) GetByID(c *gin.Context) {
 }
 
 func (h *BlogHandler) Create(c *gin.Context) {
-	var blog entity.Blog
-	if err := c.ShouldBindJSON(&blog); err != nil {
+	var req entity.CreateBlogRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, &entity.Resp{
 			Message: err.Error(),
 			Success: false,
 		})
 		return
+	}
+
+	tags := make([]entity.Tag, 0)
+	for _, v := range req.Tags {
+		tags = append(tags, entity.Tag{ID: v})
+	}
+
+	blog := entity.Blog{
+		Title:    req.Title,
+		Content:  req.Content,
+		Category: req.Category,
+		Tags:     tags,
 	}
 
 	if err := h.Usecase.Create(c.Request.Context(), &blog); err != nil {
@@ -90,9 +103,8 @@ func (h *BlogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var updateBlog entity.UpdateBlogRequest
-
-	if err := c.ShouldBindJSON(&updateBlog); err != nil {
+	var req entity.UpdateBlogRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, &entity.Resp{
 			Message: err.Error(),
 			Success: false,
@@ -100,9 +112,19 @@ func (h *BlogHandler) Update(c *gin.Context) {
 		return
 	}
 
-	blog, err := h.Usecase.Update(c.Request.Context(), uint(blogID), &updateBlog)
+	tags := make([]entity.Tag, 0)
+	for _, v := range req.Tags {
+		tags = append(tags, entity.Tag{ID: v})
+	}
 
-	if err != nil {
+	updateBlog := entity.Blog{
+		Title:    req.Title,
+		Content:  req.Content,
+		Category: req.Category,
+		Tags:     tags,
+	}
+
+	if err := h.Usecase.Update(c.Request.Context(), uint(blogID), &updateBlog); err != nil {
 		c.JSON(http.StatusInternalServerError, &entity.Resp{
 			Message: err.Error(),
 			Success: false,
@@ -111,7 +133,7 @@ func (h *BlogHandler) Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, &entity.Resp{
-		Data:    blog,
+		Data:    updateBlog,
 		Success: true,
 	})
 }

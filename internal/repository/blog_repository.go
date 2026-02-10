@@ -20,7 +20,7 @@ func NewBlogRepository(db *gorm.DB) entity.BlogRepository {
 func (repo *blogRepository) GetAll(ctx context.Context) ([]entity.Blog, error) {
 	blogs := make([]entity.Blog, 0)
 
-	if err := repo.db.WithContext(ctx).Find(&blogs).Error; err != nil {
+	if err := repo.db.WithContext(ctx).Preload("Tags").Find(&blogs).Error; err != nil {
 		return nil, err
 	}
 
@@ -30,7 +30,7 @@ func (repo *blogRepository) GetAll(ctx context.Context) ([]entity.Blog, error) {
 func (repo *blogRepository) GetByID(ctx context.Context, id uint) (*entity.Blog, error) {
 	var blog entity.Blog
 
-	if err := repo.db.WithContext(ctx).First(&blog, id).Error; err != nil {
+	if err := repo.db.WithContext(ctx).Preload("Tags").First(&blog, id).Error; err != nil {
 		return nil, err
 	}
 
@@ -38,27 +38,29 @@ func (repo *blogRepository) GetByID(ctx context.Context, id uint) (*entity.Blog,
 }
 
 func (repo *blogRepository) Create(ctx context.Context, blog *entity.Blog) error {
-	return repo.db.WithContext(ctx).Create(blog).Error
+	if err := repo.db.WithContext(ctx).Create(blog).Error; err != nil {
+		return err
+	}
+
+	return repo.db.WithContext(ctx).Preload("Tags").First(blog, blog.ID).Error
 }
 
-func (repo *blogRepository) Update(ctx context.Context, id uint, updateBlog *entity.UpdateBlogRequest) (*entity.Blog, error) {
-	var blog entity.Blog
+func (repo *blogRepository) Update(ctx context.Context, id uint, blog *entity.Blog) error {
+	var existingBlog entity.Blog
 
-	if result := repo.db.WithContext(ctx).First(&blog, id); result.Error != nil {
-		return nil, result.Error
+	if result := repo.db.WithContext(ctx).Preload("Tags").First(&existingBlog, id); result.Error != nil {
+		return result.Error
 	}
 
-	updateData := entity.Blog{
-		Title:    updateBlog.Title,
-		Content:  updateBlog.Content,
-		Category: updateBlog.Category,
+	if result := repo.db.WithContext(ctx).Model(&existingBlog).Updates(blog); result.Error != nil {
+		return result.Error
 	}
 
-	if result := repo.db.WithContext(ctx).Model(&blog).Updates(&updateData); result.Error != nil {
-		return nil, result.Error
+	if err := repo.db.WithContext(ctx).Model(&existingBlog).Association("Tags").Replace(blog.Tags); err != nil {
+		return err
 	}
 
-	return &blog, nil
+	return repo.db.WithContext(ctx).Preload("Tags").First(blog, existingBlog.ID).Error
 }
 
 func (repo *blogRepository) Delete(ctx context.Context, id uint) error {

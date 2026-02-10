@@ -7,34 +7,47 @@ import (
 	"gorm.io/gorm"
 )
 
+type Tag struct {
+	ID   uint   `json:"id" gorm:"primaryKey"`
+	Name string `json:"name" gorm:"unique;not null"`
+}
+
 type Blog struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
 	Title     string         `json:"title"`
 	Content   *string        `json:"content"`
 	Category  *string        `json:"category"`
+	Tags      []Tag          `json:"tags" gorm:"many2many:blog_tags;"`
 	CreatedAt time.Time      `json:"createdAt"`
 	UpdatedAt time.Time      `json:"updatedAt"`
 	DeletedAt gorm.DeletedAt `json:"-"`
+}
+
+type CreateBlogRequest struct {
+	Title    string  `json:"title" binding:"required"`
+	Content  *string `json:"content"`
+	Category *string `json:"category"`
+	Tags     []uint  `json:"tags"`
 }
 
 type UpdateBlogRequest struct {
 	Title    string  `json:"title" binding:"required"`
 	Content  *string `json:"content"`
 	Category *string `json:"category"`
+	Tags     []uint  `json:"tags"`
 }
 
 type BlogRepository interface {
 	GetAll(ctx context.Context) ([]Blog, error)
 	GetByID(ctx context.Context, id uint) (*Blog, error)
 	Create(ctx context.Context, blog *Blog) error
-	Update(ctx context.Context, id uint, updateBlog *UpdateBlogRequest) (*Blog, error)
+	Update(ctx context.Context, id uint, blog *Blog) error
 	Delete(ctx context.Context, id uint) error
 }
-
 type BlogUsecase interface {
 	GetAll(ctx context.Context) ([]Blog, error)
 	GetByID(ctx context.Context, id uint) (*Blog, error)
 	Create(ctx context.Context, blog *Blog) error
-	Update(ctx context.Context, id uint, updateBlog *UpdateBlogRequest) (*Blog, error)
+	Update(ctx context.Context, id uint, blog *Blog) error
 	Delete(ctx context.Context, id uint) error
 }

@@ -24,10 +24,27 @@ func SetupDatabase(env *ENV) *gorm.DB {
 	}
 
 	// สั่งสร้าง Table อัตโนมัติจาก Entity ที่เรานิยามไว้
-	err = db.AutoMigrate(&entity.Blog{})
+	err = db.AutoMigrate(&entity.Blog{}, &entity.Tag{})
 	if err != nil {
 		log.Fatal("Migration Failed:", err)
 	}
+
+	// tags := []string{
+	// 	"Technology",
+	// 	"Programming",
+	// 	"Lifestyle",
+	// 	"Productivity",
+	// 	"Health & Wellness",
+	// 	"Travel",
+	// 	"Education",
+	// 	"Business",
+	// 	"Entertainment",
+	// 	"Personal Growth",
+	// }
+
+	// for _, name := range tags {
+	// 	db.FirstOrCreate(&entity.Tag{}, entity.Tag{Name: name})
+	// }
 
 	return db
 }
