@@ -25,9 +25,8 @@ type Application struct {
 }
 
 func App() Application {
-	err := godotenv.Load("config/.env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load("config/.env"); err != nil {
+		log.Println("Error loading .env file")
 	}
 
 	env := &ENV{
