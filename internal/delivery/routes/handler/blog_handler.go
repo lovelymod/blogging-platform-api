@@ -12,6 +12,50 @@ type BlogHandler struct {
 	Usecase entity.BlogUsecase
 }
 
+func (h *BlogHandler) GetAll(c *gin.Context) {
+	blogs, err := h.Usecase.GetAll(c.Request.Context())
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &entity.Resp{
+			Message: err.Error(),
+			Success: false,
+		})
+		return
+
+	}
+
+	c.JSON(http.StatusOK, &entity.Resp{
+		Data:    blogs,
+		Success: true,
+	})
+}
+
+func (h *BlogHandler) GetByID(c *gin.Context) {
+	blogID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &entity.Resp{
+			Message: err.Error(),
+			Success: false,
+		})
+		return
+	}
+
+	blog, err := h.Usecase.GetByID(c.Request.Context(), uint(blogID))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &entity.Resp{
+			Message: err.Error(),
+			Success: false,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, &entity.Resp{
+		Data:    blog,
+		Success: true,
+	})
+}
+
 func (h *BlogHandler) Create(c *gin.Context) {
 	var blog entity.Blog
 	if err := c.ShouldBindJSON(&blog); err != nil {
@@ -33,8 +77,23 @@ func (h *BlogHandler) Create(c *gin.Context) {
 	})
 }
 
-func (h *BlogHandler) GetAll(c *gin.Context) {
-	blogs, err := h.Usecase.GetAll(c.Request.Context())
+func (h *BlogHandler) Update(c *gin.Context) {
+	blogID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, &entity.Resp{
+			Message: err.Error(),
+			Success: false,
+		})
+		return
+	}
+	var updateBlog entity.UpdateBlogRequest
+
+	if err := c.ShouldBindJSON(&updateBlog); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	blog, err := h.Usecase.Update(c.Request.Context(), uint(blogID), &updateBlog)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &entity.Resp{
@@ -42,11 +101,10 @@ func (h *BlogHandler) GetAll(c *gin.Context) {
 			Success: false,
 		})
 		return
-
 	}
 
 	c.JSON(http.StatusOK, &entity.Resp{
-		Data:    blogs,
+		Data:    blog,
 		Success: true,
 	})
 }

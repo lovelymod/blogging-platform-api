@@ -12,9 +12,16 @@ type Handlers struct {
 
 func SetupRoutes(r *gin.Engine, h *Handlers) {
 	// Public Routes
-	r.POST("/blog", h.BlogHandler.Create)
-	r.GET("/blogs", h.BlogHandler.GetAll)
-	r.DELETE("/blog/:id", h.BlogHandler.Delete)
+
+	api := r.Group("/api")
+	{
+
+		api.GET("/blogs", h.BlogHandler.GetAll)
+		api.GET("/blog/:id", h.BlogHandler.GetByID)
+		api.POST("/blog", h.BlogHandler.Create)
+		api.PUT("/blog/:id", h.BlogHandler.Update)
+		api.DELETE("/blog/:id", h.BlogHandler.Delete)
+	}
 
 	// api := r.GroupogHandler.GetAll)
 
