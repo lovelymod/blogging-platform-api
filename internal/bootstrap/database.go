@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupDatabase(env *ENV) *gorm.DB {
+func SetupDatabase(env *Config) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		env.SUPABASE_HOST,
 		env.SUPABASE_USER,

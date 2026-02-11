@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type ENV struct {
+type Config struct {
 	SUPABASE_HOST     string
 	SUPABASE_USER     string
 	SUPABASE_PASSWORD string
@@ -19,9 +19,9 @@ type ENV struct {
 }
 
 type Application struct {
-	DB         *gorm.DB
-	ENV        *ENV
-	CorsConfig gin.HandlerFunc
+	DB     *gorm.DB
+	Config *Config
+	Cors   gin.HandlerFunc
 }
 
 func App() Application {
@@ -29,7 +29,7 @@ func App() Application {
 		log.Println("Error loading .env file")
 	}
 
-	env := &ENV{
+	env := &Config{
 		SUPABASE_HOST:     os.Getenv("SUPABASE_HOST"),
 		SUPABASE_USER:     os.Getenv("SUPABASE_USER"),
 		SUPABASE_PASSWORD: os.Getenv("SUPABASE_PASSWORD"),
@@ -38,10 +38,10 @@ func App() Application {
 	}
 
 	app := &Application{
-		ENV: env,
+		Config: env,
 	}
 	app.DB = SetupDatabase(env) // เรียกฟังก์ชันจาก database.go
 
-	app.CorsConfig = cors.Default()
+	app.Cors = cors.Default()
 	return *app
 }

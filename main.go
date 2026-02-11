@@ -26,9 +26,8 @@ func main() {
 
 	r := gin.Default()
 
-	r.Use(app.CorsConfig)
+	r.Use(app.Cors)
 
-	// เรียกใช้ router.go เพื่อเชื่อมโยงเส้นทาง
 	routes.SetupRoutes(r, h)
 
 	r.Run(":8080")
