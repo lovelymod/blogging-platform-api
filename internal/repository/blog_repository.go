@@ -20,7 +20,7 @@ func NewBlogRepository(db *gorm.DB) entity.BlogRepository {
 func (repo *blogRepository) GetAll(ctx context.Context) ([]entity.Blog, error) {
 	blogs := make([]entity.Blog, 0)
 
-	if err := repo.db.WithContext(ctx).Preload("Tags").Find(&blogs).Error; err != nil {
+	if err := repo.db.WithContext(ctx).Order("ID asc").Preload("Tags").Find(&blogs).Error; err != nil {
 		return nil, err
 	}
 
