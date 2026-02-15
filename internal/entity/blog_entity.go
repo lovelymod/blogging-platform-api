@@ -23,6 +23,12 @@ type Blog struct {
 	DeletedAt gorm.DeletedAt `json:"-"`
 }
 
+type BlogFilter struct {
+	Title    string `form:"title"`
+	Category string `form:"category"`
+	Tags     []uint `form:"tags"`
+}
+
 type CreateBlogRequest struct {
 	Title    string  `json:"title" binding:"required"`
 	Content  *string `json:"content"`
@@ -38,14 +44,14 @@ type UpdateBlogRequest struct {
 }
 
 type BlogRepository interface {
-	GetAll(ctx context.Context) ([]Blog, error)
+	GetAll(ctx context.Context, filter *BlogFilter) ([]Blog, error)
 	GetByID(ctx context.Context, id uint) (*Blog, error)
 	Create(ctx context.Context, blog *Blog) (*Blog, error)
 	Update(ctx context.Context, id uint, blog *Blog) (*Blog, error)
 	Delete(ctx context.Context, id uint) error
 }
 type BlogUsecase interface {
-	GetAll(ctx context.Context) ([]Blog, error)
+	GetAll(ctx context.Context, filter *BlogFilter) ([]Blog, error)
 	GetByID(ctx context.Context, id uint) (*Blog, error)
 	Create(ctx context.Context, blog *Blog) (*Blog, error)
 	Update(ctx context.Context, id uint, blog *Blog) (*Blog, error)

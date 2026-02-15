@@ -13,7 +13,25 @@ type BlogHandler struct {
 }
 
 func (h *BlogHandler) GetAll(c *gin.Context) {
-	blogs, err := h.Usecase.GetAll(c.Request.Context())
+	filter := &entity.BlogFilter{
+		Title:    c.Query("title"),
+		Category: c.Query("category"),
+		Tags:     []uint{},
+	}
+
+	tagsStr := c.QueryArray("tags")
+
+	for _, v := range tagsStr {
+		tagID, err := strconv.ParseUint(v, 10, 32)
+		if err != nil {
+			return
+		}
+
+		filter.Tags = append(filter.Tags, uint(tagID))
+
+	}
+
+	blogs, err := h.Usecase.GetAll(c.Request.Context(), filter)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &entity.Resp{

@@ -17,10 +17,25 @@ func NewBlogRepository(db *gorm.DB) entity.BlogRepository {
 	}
 }
 
-func (repo *blogRepository) GetAll(ctx context.Context) ([]entity.Blog, error) {
+func (repo *blogRepository) GetAll(ctx context.Context, filter *entity.BlogFilter) ([]entity.Blog, error) {
 	blogs := make([]entity.Blog, 0)
 
-	if err := repo.db.WithContext(ctx).Order("ID asc").Preload("Tags").Find(&blogs).Error; err != nil {
+	tx := repo.db.WithContext(ctx).Model(&entity.Blog{})
+
+	// LIKE = Case sensitive, ILIKE In case sensitve
+	if filter.Title != "" {
+		tx.Where("Title ILIKE ?", "%"+filter.Title+"%")
+	}
+
+	if filter.Category != "" {
+		tx.Where("Category ILIKE ?", "%"+filter.Category+"%")
+	}
+
+	if len(filter.Tags) > 0 {
+		tx.Joins("JOIN blog_tags ON blogs.id = blog_tags.blog_id").Where("blog_tags.tag_id IN ?", filter.Tags).Group("blogs.id")
+	}
+
+	if err := tx.Order("ID asc").Preload("Tags").Find(&blogs).Error; err != nil {
 		return nil, err
 	}
 
