@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -58,4 +59,11 @@ type BlogUsecase interface {
 	Create(ctx context.Context, blog *Blog) (*Blog, error)
 	Update(ctx context.Context, id uint, blog *Blog) (*Blog, error)
 	Delete(ctx context.Context, id uint) error
+}
+type BlogHandler interface {
+	GetAll(c *gin.Context)
+	GetByID(c *gin.Context)
+	Create(c *gin.Context)
+	Update(c *gin.Context)
+	Delete(c *gin.Context)
 }

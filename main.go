@@ -19,9 +19,10 @@ func main() {
 	// สร้าง Layer ต่างๆ
 	blogRepo := repository.NewBlogRepository(app.DB)
 	blogUsecase := usecase.NewBlogUsecase(blogRepo, time.Second*2)
+	blogHandler := handler.NewBlogHandler(blogUsecase)
 
 	h := &routes.Handlers{
-		BlogHandler: &handler.BlogHandler{Usecase: blogUsecase},
+		BlogHandler: blogHandler,
 	}
 
 	r := gin.Default()

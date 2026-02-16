@@ -1,18 +1,17 @@
 package routes
 
 import (
-	"blogging-platform-api/internal/delivery/routes/handler"
+	"blogging-platform-api/internal/entity"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handlers struct {
-	BlogHandler *handler.BlogHandler
+	BlogHandler entity.BlogHandler
 }
 
 func SetupRoutes(r *gin.Engine, h *Handlers) {
 	// Public Routes
-
 	api := r.Group("/api")
 	{
 

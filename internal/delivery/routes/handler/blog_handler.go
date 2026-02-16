@@ -9,11 +9,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type BlogHandler struct {
+type blogHandler struct {
 	Usecase entity.BlogUsecase
 }
 
-func (h *BlogHandler) GetAll(c *gin.Context) {
+func NewBlogHandler(u entity.BlogUsecase) entity.BlogHandler {
+	return &blogHandler{
+		Usecase: u,
+	}
+}
+
+func (h *blogHandler) GetAll(c *gin.Context) {
 	var pageInt int
 
 	pageStr := c.Query("page")
@@ -96,7 +102,7 @@ func (h *BlogHandler) GetAll(c *gin.Context) {
 	})
 }
 
-func (h *BlogHandler) GetByID(c *gin.Context) {
+func (h *blogHandler) GetByID(c *gin.Context) {
 	blogID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &entity.Resp{
@@ -122,7 +128,7 @@ func (h *BlogHandler) GetByID(c *gin.Context) {
 	})
 }
 
-func (h *BlogHandler) Create(c *gin.Context) {
+func (h *blogHandler) Create(c *gin.Context) {
 	var req entity.CreateBlogRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -161,7 +167,7 @@ func (h *BlogHandler) Create(c *gin.Context) {
 	})
 }
 
-func (h *BlogHandler) Update(c *gin.Context) {
+func (h *blogHandler) Update(c *gin.Context) {
 	blogID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &entity.Resp{
@@ -208,7 +214,7 @@ func (h *BlogHandler) Update(c *gin.Context) {
 	})
 }
 
-func (h *BlogHandler) Delete(c *gin.Context) {
+func (h *blogHandler) Delete(c *gin.Context) {
 	deleteID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, &entity.Resp{
