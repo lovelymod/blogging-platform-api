@@ -18,10 +18,10 @@ func NewUserRepository(db *gorm.DB) entity.UserRepository {
 	}
 }
 
-func (repo *userRepository) Register(ctx context.Context, req *entity.UserRegisterReq) error {
+func (repo *userRepository) Register(ctx context.Context, user *entity.User) error {
 	var count int64
 
-	if err := repo.db.WithContext(ctx).Model(&entity.User{}).Where(&entity.User{Email: req.Email}).Count(&count).Error; err != nil {
+	if err := repo.db.WithContext(ctx).Model(&entity.User{}).Where(&entity.User{Email: user.Email}).Count(&count).Error; err != nil {
 		log.Println(err)
 		return entity.ErrGlobalServerErr
 	}
@@ -30,14 +30,7 @@ func (repo *userRepository) Register(ctx context.Context, req *entity.UserRegist
 		return entity.ErrUserThisEmailIsAlreadyUsed
 	}
 
-	newUser := &entity.User{
-		Email:          req.Email,
-		HashedPassword: req.HashedPassword,
-		FirstName:      req.FirstName,
-		LastName:       req.LastName,
-	}
-
-	if err := repo.db.WithContext(ctx).Create(newUser).Error; err != nil {
+	if err := repo.db.WithContext(ctx).Create(user).Error; err != nil {
 		log.Println(err)
 		return entity.ErrGlobalServerErr
 	}

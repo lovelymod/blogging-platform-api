@@ -11,16 +11,21 @@ import (
 )
 
 type userUsecase struct {
-	repo    entity.UserRepository
-	timeout time.Duration
-	env     *entity.Config
+	repo     entity.UserRepository
+	timeout  time.Duration
+	hashCost int
 }
 
 func NewUserUsecase(repo entity.UserRepository, contextTimeout time.Duration, env *entity.Config) entity.UserUsecase {
+	cost, _ := strconv.Atoi(env.HASH_COST)
+	if cost < 12 {
+		cost = 12
+	}
+
 	return &userUsecase{
-		repo:    repo,
-		timeout: contextTimeout,
-		env:     env,
+		repo:     repo,
+		timeout:  contextTimeout,
+		hashCost: cost,
 	}
 }
 
@@ -28,19 +33,18 @@ func (u *userUsecase) Register(req *entity.UserRegisterReq) error {
 	ctx, cancel := context.WithTimeout(context.Background(), u.timeout)
 	defer cancel()
 
-	parsedCost, err := strconv.Atoi(u.env.HASH_COST)
+	hasdPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), u.hashCost)
 	if err != nil {
 		log.Println(err)
 		return entity.ErrGlobalServerErr
 	}
 
-	hasdPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), parsedCost)
-	if err != nil {
-		log.Println(err)
-		return entity.ErrGlobalServerErr
+	user := &entity.User{
+		Email:          req.Email,
+		HashedPassword: string(hasdPassword),
+		FirstName:      req.FirstName,
+		LastName:       req.LastName,
 	}
 
-	req.HashedPassword = string(hasdPassword)
-
-	return u.repo.Register(ctx, req)
+	return u.repo.Register(ctx, user)
 }

@@ -30,7 +30,7 @@ type UserRegisterReq struct {
 }
 
 type UserRepository interface {
-	Register(ctx context.Context, req *UserRegisterReq) error
+	Register(ctx context.Context, user *User) error
 }
 
 type UserUsecase interface {
