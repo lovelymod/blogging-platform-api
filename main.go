@@ -24,9 +24,15 @@ func main() {
 	authUsecase := usecase.NewAuthUsecase(authRepo, time.Second*2, app.Config)
 	authHandler := handler.NewAuthHandler(authUsecase)
 
+	// User layer
+	userRepo := repository.NewUserRepository(app.DB)
+	userUsecase := usecase.NewUserUsecase(userRepo, time.Second*2)
+	userHandler := handler.NewUserHandler(userUsecase)
+
 	h := &router.Handlers{
 		BlogHandler: blogHandler,
 		AuthHandler: authHandler,
+		UserHandler: userHandler,
 	}
 
 	r := gin.Default()

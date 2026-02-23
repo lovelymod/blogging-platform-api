@@ -10,32 +10,43 @@ import (
 type Handlers struct {
 	BlogHandler entity.BlogHandler
 	AuthHandler entity.AuthHandler
+	UserHandler entity.UserHandler
 }
 
 func SetupRoutes(r *gin.Engine, h *Handlers, config *entity.Config) {
 	api := r.Group("/api")
 
-	// Auth
+	auth := api.Group("/auth")
 	{
-		api.POST("/register", h.AuthHandler.Register)
-		api.POST("/login", h.AuthHandler.Login)
-		api.POST("/refresh-token", h.AuthHandler.RefreshToken)
+		// Auth
+		auth.POST("/register", h.AuthHandler.Register)
+		auth.POST("/login", h.AuthHandler.Login)
+		auth.POST("/refresh-token", h.AuthHandler.RefreshToken)
 	}
 
-	protected := api.Use(middleware.AuthMiddleware(config))
+	private := api.Group("/")
+	private.Use(middleware.AuthMiddleware(config))
 
-	// Auth
 	{
-		protected.POST("/logout", h.AuthHandler.Logout)
-	}
+		// Auth
+		{
+			private.POST("/auth/logout", h.AuthHandler.Logout)
+		}
 
-	// Blog
-	{
-		protected.GET("/blogs", h.BlogHandler.GetAll)
-		protected.GET("/blog/:id", h.BlogHandler.GetByID)
-		protected.POST("/blog", h.BlogHandler.Create)
-		protected.PUT("/blog/:id", h.BlogHandler.Update)
-		protected.DELETE("/blog/:id", h.BlogHandler.Delete)
+		// Blog
+		blog := private.Group("/blogs")
+		{
+			blog.GET("", h.BlogHandler.GetAll)
+			blog.GET("/:id", h.BlogHandler.GetByID)
+			blog.POST("", h.BlogHandler.Create)
+			blog.PUT("/:id", h.BlogHandler.Update)
+			blog.DELETE("/:id", h.BlogHandler.Delete)
+		}
+
+		// User
+		{
+			private.GET("/profile/:username", h.UserHandler.GetUserProfile)
+		}
 	}
 
 }

@@ -1,8 +1,10 @@
 package entity
 
 import (
+	"context"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -19,4 +21,14 @@ type User struct {
 	CreatedAt      time.Time      `json:"createdAt" gorm:"autoCreateTime"`
 	UpdatedAt      time.Time      `json:"updatedAt" gorm:"autoUpdateTime"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
+}
+
+type UserRepository interface {
+	GetUserByUsername(ctx context.Context, username string) (*User, error)
+}
+type UserUsercase interface {
+	GetUserProfile(username string) (*User, error)
+}
+type UserHandler interface {
+	GetUserProfile(c *gin.Context)
 }
