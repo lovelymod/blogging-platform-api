@@ -19,7 +19,7 @@ func main() {
 	blogUsecase := usecase.NewBlogUsecase(blogRepo, time.Second*2)
 	blogHandler := handler.NewBlogHandler(blogUsecase)
 
-	// User layer
+	// Auth layer
 	authRepo := repository.NewAuthRepository(app.DB)
 	authUsecase := usecase.NewAuthUsecase(authRepo, time.Second*2, app.Config)
 	authHandler := handler.NewAuthHandler(authUsecase)

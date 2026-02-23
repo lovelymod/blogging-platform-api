@@ -53,7 +53,7 @@ func (repo *blogRepository) GetAll(ctx context.Context, filter *entity.BlogFilte
 		tx.Offset(offset).Limit(filter.Limit)
 	}
 
-	if err := tx.Order("ID asc").Preload("Tags").Find(&blogs).Error; err != nil {
+	if err := tx.Order("ID asc").Preload("User").Preload("Tags").Find(&blogs).Error; err != nil {
 		log.Println(err)
 		return nil, 0, entity.ErrGlobalServerErr
 	}

@@ -114,7 +114,7 @@ func (h *blogHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	blog, err := h.usecase.GetByID(c.Request.Context(), uint(blogID))
+	blogResp, err := h.usecase.GetByID(c.Request.Context(), uint(blogID))
 
 	if err != nil {
 		httpErrStatus := utils.GetHttpErrStatus(err)
@@ -126,7 +126,7 @@ func (h *blogHandler) GetByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, &entity.Resp{
-		Data:    blog,
+		Data:    blogResp,
 		Success: true,
 	})
 }

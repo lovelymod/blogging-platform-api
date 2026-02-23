@@ -18,18 +18,62 @@ func NewBlogUsecase(repo entity.BlogRepository, timeout time.Duration) entity.Bl
 	}
 }
 
-func (u *blogUsecase) GetAll(ctx context.Context, filter *entity.BlogFilter) ([]entity.Blog, int64, error) {
+func (u *blogUsecase) GetAll(ctx context.Context, filter *entity.BlogFilter) ([]entity.BlogResp, int64, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
-	return u.repo.GetAll(ctx, filter)
+	blogs, totalRows, err := u.repo.GetAll(ctx, filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var blogsResp []entity.BlogResp
+
+	for _, blog := range blogs {
+		blogsResp = append(blogsResp, entity.BlogResp{
+			ID:        blog.ID,
+			Title:     blog.Title,
+			Content:   blog.Content,
+			Category:  blog.Category,
+			Tags:      blog.Tags,
+			CreatedAt: blog.CreatedAt,
+			UpdatedAt: blog.UpdatedAt,
+			Author: &entity.AuthorResp{
+				DisplayName: blog.User.DisplayName,
+				Username:    blog.User.Username,
+				Avatar:      blog.User.Avatar,
+			},
+		})
+	}
+
+	return blogsResp, totalRows, nil
 }
 
-func (u *blogUsecase) GetByID(ctx context.Context, id uint) (*entity.Blog, error) {
+func (u *blogUsecase) GetByID(ctx context.Context, id uint) (*entity.BlogResp, error) {
 	ctx, cancel := context.WithTimeout(ctx, u.contextTimeout)
 	defer cancel()
 
-	return u.repo.GetByID(ctx, id)
+	blog, err := u.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	blogResp := &entity.BlogResp{
+		ID:        blog.ID,
+		Title:     blog.Title,
+		Content:   blog.Content,
+		Category:  blog.Category,
+		Tags:      blog.Tags,
+		CreatedAt: blog.CreatedAt,
+		UpdatedAt: blog.UpdatedAt,
+		Author: &entity.AuthorResp{
+			DisplayName: blog.User.DisplayName,
+			Username:    blog.User.Username,
+			Avatar:      blog.User.Avatar,
+		},
+	}
+
+	return blogResp, nil
 }
 
 func (u *blogUsecase) Create(ctx context.Context, blog *entity.Blog) (*entity.Blog, error) {

@@ -53,8 +53,11 @@ func (u *authUsercase) Register(req *entity.AuthRegisterReq) error {
 
 	if req.Username != "" {
 		user.Username = req.Username
+		user.DisplayName = req.Username
 	} else {
-		user.Username = "user" + strconv.FormatInt(time.Now().Unix(), 10)
+		defaultUsername := "user" + strconv.FormatInt(time.Now().Unix(), 10)
+		user.Username = defaultUsername
+		user.DisplayName = defaultUsername
 	}
 
 	return u.repo.CreateUser(ctx, user)
