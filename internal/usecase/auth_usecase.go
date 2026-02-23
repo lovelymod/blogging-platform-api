@@ -146,13 +146,13 @@ func (u *authUsercase) RefreshToken(rt string) (string, string, error) {
 	}
 
 	// Sign new accessToken
-	_, newAT, err := utils.SignAccessToken(&existRT.User, u.accessTokenSecret)
+	_, newAT, err := utils.SignAccessToken(existRT.User, u.accessTokenSecret)
 	if err != nil {
 		return "", "", entity.ErrGlobalServerErr
 	}
 
 	// Sign new refreshToken
-	newRTClaims, newRT, err := utils.SignRefreshToken(&existRT.User, u.refreshTokenSecret)
+	newRTClaims, newRT, err := utils.SignRefreshToken(existRT.User, u.refreshTokenSecret)
 	if err != nil {
 		log.Println(err)
 		return "", "", entity.ErrGlobalServerErr

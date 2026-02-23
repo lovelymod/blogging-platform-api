@@ -11,7 +11,7 @@ import (
 type RefreshToken struct {
 	ID        uint      `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID    uint      `json:"userID" gorm:"not null;index"`
-	User      User      `json:"user"`
+	User      *User     `json:"user"`
 	Token     string    `json:"token" gorm:"not null;unique"`
 	Jti       string    `json:"jti" gorm:"not null;unique"`
 	ExpiresAt time.Time `json:"expiresAt" gorm:"not null"`
