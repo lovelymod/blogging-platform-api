@@ -2,19 +2,22 @@ package usecase
 
 import (
 	"blogging-platform-api/internal/entity"
+	"blogging-platform-api/internal/provider"
 	"context"
 	"time"
 )
 
 type userUsercase struct {
-	repo    entity.UserRepository
-	timeout time.Duration
+	repo       entity.UserRepository
+	s3Provider provider.S3Provider
+	timeout    time.Duration
 }
 
-func NewUserUsecase(repo entity.UserRepository, timeout time.Duration) entity.UserUsercase {
+func NewUserUsecase(repo entity.UserRepository, s3Provider provider.S3Provider, timeout time.Duration) entity.UserUsercase {
 	return &userUsercase{
-		repo:    repo,
-		timeout: timeout,
+		repo:       repo,
+		timeout:    timeout,
+		s3Provider: s3Provider,
 	}
 }
 

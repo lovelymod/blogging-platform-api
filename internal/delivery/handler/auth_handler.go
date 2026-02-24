@@ -22,7 +22,7 @@ func NewAuthHandler(usecase entity.AuthUsecase) entity.AuthHandler {
 func (h *authHandler) Register(c *gin.Context) {
 	var req entity.AuthRegisterReq
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, &entity.Resp{
 			Message: err.Error(),

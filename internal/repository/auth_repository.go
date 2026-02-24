@@ -45,12 +45,7 @@ func (repo *authRepository) GetUserByEmail(ctx context.Context, email string) (*
 	var existUser entity.User
 
 	if err := repo.db.WithContext(ctx).Where(&entity.User{Email: email}).First(&existUser).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, entity.ErrAuthWrongEmailOrPassword
-		}
-
-		log.Println(err)
-		return nil, entity.ErrGlobalServerErr
+		return nil, err
 	}
 
 	return &existUser, nil

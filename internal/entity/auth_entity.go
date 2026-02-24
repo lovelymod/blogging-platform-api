@@ -2,6 +2,7 @@ package entity
 
 import (
 	"context"
+	"mime/multipart"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,12 +23,15 @@ type RefreshToken struct {
 }
 
 type AuthRegisterReq struct {
-	FirstName      string `json:"firstName" binding:"required"`
-	LastName       string `json:"lastName" binding:"required"`
-	Username       string `json:"username"`
-	Email          string `json:"email" binding:"required,email"`
-	Password       string `json:"password" binding:"required"`
-	HashedPassword string `json:"hashed_password"`
+	FirstName      string                `form:"firstName" binding:"required"`
+	LastName       string                `form:"lastName" binding:"required"`
+	Username       string                `form:"username"`
+	DisplayName    string                `form:"displayName"`
+	FileAvatar     *multipart.FileHeader `form:"fileAvatar"`
+	Avatar         string
+	Email          string `form:"email" binding:"required,email"`
+	Password       string `form:"password" binding:"required"`
+	HashedPassword string
 }
 
 type AuthLoginReq struct {

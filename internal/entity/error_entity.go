@@ -4,8 +4,10 @@ import "errors"
 
 // Global Error
 var (
-	ErrGlobalNotFound  = errors.New("not_found")
-	ErrGlobalServerErr = errors.New("internal_server_error")
+	ErrGlobalNotFound               = errors.New("not_found")
+	ErrGlobalServerErr              = errors.New("internal_server_error")
+	ErrGlobalFileSizeExceedLimit    = errors.New("file_size_exceed_limit")
+	ErrGlobalInvalidFileContentType = errors.New("invalid_file_content_type")
 )
 
 // Blog Error

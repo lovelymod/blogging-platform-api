@@ -2,24 +2,29 @@ package usecase
 
 import (
 	"blogging-platform-api/internal/entity"
+	"blogging-platform-api/internal/provider"
 	"blogging-platform-api/pkg/utils"
 	"context"
+	"errors"
 	"log"
+	"slices"
 	"strconv"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type authUsercase struct {
 	repo               entity.AuthRepository
 	timeout            time.Duration
+	s3Provider         provider.S3Provider
 	hashCost           int
 	accessTokenSecret  string
 	refreshTokenSecret string
 }
 
-func NewAuthUsecase(repo entity.AuthRepository, contextTimeout time.Duration, config *entity.Config) entity.AuthUsecase {
+func NewAuthUsecase(repo entity.AuthRepository, contextTimeout time.Duration, config *entity.Config, s3Provider provider.S3Provider) entity.AuthUsecase {
 	cost, _ := strconv.Atoi(config.HASH_COST)
 	if cost < 12 {
 		cost = 12
@@ -29,6 +34,7 @@ func NewAuthUsecase(repo entity.AuthRepository, contextTimeout time.Duration, co
 		repo:               repo,
 		timeout:            contextTimeout,
 		hashCost:           cost,
+		s3Provider:         s3Provider,
 		accessTokenSecret:  config.ACCESS_TOKEN_SECRET,
 		refreshTokenSecret: config.REFRESH_TOKEN_SECRET,
 	}
@@ -38,26 +44,61 @@ func (u *authUsercase) Register(req *entity.AuthRegisterReq) error {
 	ctx, cancel := context.WithTimeout(context.Background(), u.timeout)
 	defer cancel()
 
+	_, err := u.repo.GetUserByEmail(ctx, req.Email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.ErrGlobalServerErr
+	}
+
+	if err == nil {
+		return entity.ErrAuthThisEmailOrUsernameIsAlreadyUsed
+	}
+
+	user := &entity.User{
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+	}
+
+	if req.FileAvatar != nil {
+		size := req.FileAvatar.Size
+		contentType := req.FileAvatar.Header.Get("Content-Type")
+		// 5Mb = 5 * 2^20
+		if size > 5<<20 {
+			return entity.ErrGlobalFileSizeExceedLimit
+		}
+
+		isValidType := slices.Contains([]string{"image/jpeg", "image/png", "image/webp"}, contentType)
+		if !isValidType {
+			return entity.ErrGlobalInvalidFileContentType
+		}
+
+		url, err := u.s3Provider.UploadImage(ctx, req.FileAvatar, "images")
+		if err != nil {
+			log.Println(err)
+			return entity.ErrGlobalServerErr
+		}
+
+		user.Avatar = url
+	}
+
 	hasdPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), u.hashCost)
 	if err != nil {
 		log.Println(err)
 		return entity.ErrGlobalServerErr
 	}
-
-	user := &entity.User{
-		Email:          req.Email,
-		HashedPassword: string(hasdPassword),
-		FirstName:      req.FirstName,
-		LastName:       req.LastName,
-	}
+	user.HashedPassword = string(hasdPassword)
 
 	if req.Username != "" {
 		user.Username = req.Username
-		user.DisplayName = req.Username
 	} else {
 		defaultUsername := "user" + strconv.FormatInt(time.Now().Unix(), 10)
 		user.Username = defaultUsername
-		user.DisplayName = defaultUsername
+	}
+
+	if req.DisplayName != "" {
+		user.DisplayName = req.DisplayName
+	} else {
+		user.DisplayName = user.Username
 	}
 
 	return u.repo.CreateUser(ctx, user)
@@ -69,6 +110,9 @@ func (u *authUsercase) Login(req *entity.AuthLoginReq) (*entity.AuthLoginResp, e
 
 	existUser, err := u.repo.GetUserByEmail(ctx, req.Email)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, entity.ErrAuthWrongEmailOrPassword
+		}
 		return nil, err
 	}
 
